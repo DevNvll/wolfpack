@@ -1,8 +1,8 @@
-# WOLFPACK
+![wolfpack](https://i.imgur.com/wBIqbAh.png)
 
 > Simplest Javascript bundler
 
-Wolfpack is a Javascript bundler written for learning proposes. It takes a entry point and bundles it and it's dependecies into one file. And it can watch for changes.
+Wolfpack is a simple Javascript bundler written for learning proposes. It takes a entry point and bundles it and it's dependecies into one file. And it can watch for changes.
 
 ## Usage
 
