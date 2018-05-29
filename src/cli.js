@@ -9,7 +9,7 @@ const {
 } = require('./utils')
 const chokidar = require('chokidar')
 
-const { bundleFile } = require('../lib/index')
+const { bundleFile } = require('./index')
 const command = require('commander')
 
 let options = {}

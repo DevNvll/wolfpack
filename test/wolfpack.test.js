@@ -1,4 +1,4 @@
-const { bundleFile } = require('../lib/index')
+const { bundleFile } = require('../src/index')
 const path = require('path')
 const fse = require('fs-extra')
 

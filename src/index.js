@@ -6,8 +6,6 @@ const minify = require('babel-minify')
 const traverse = require('babel-traverse').default
 const { transformFromAst } = require('babel-core')
 
-const { genId } = require('./utils')
-
 let ID = 0
 
 function parseFile(file) {
