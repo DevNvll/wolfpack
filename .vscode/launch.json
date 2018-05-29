@@ -8,7 +8,9 @@
       "type": "node",
       "request": "launch",
       "name": "Launch Program",
-      "program": "${workspaceFolder}\\src\\index.js"
+      "program": "${file}",
+      "args": ["./test/entries/index.js", "./test/out"],
+      "cwd": "${workspaceRoot}"
     }
   ]
 }

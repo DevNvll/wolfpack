@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 const path = require('path')
-const { existIndexFile, isDirectory } = require('./utils')
+const fse = require('fs-extra')
+const {
+  existIndexFile,
+  isDirectory,
+  pathExist,
+  hasExtension
+} = require('./utils')
 const chokidar = require('chokidar')
 
 const { bundleFile } = require('../lib/index')
@@ -40,34 +46,69 @@ function startWatch(filesToWatch) {
   })
 }
 
+function writeFile(content, output) {
+  return new Promise((resolve, reject) => {
+    fse
+      .outputFile(output, content)
+      .then(() => {
+        resolve()
+      })
+      .catch(err => {
+        reject(err)
+      })
+  })
+}
+
 function bundle(entry, output, watching) {
-  let outputPath, inputFile
-  let filesToWatch = []
-  if (!existIndexFile(entry)) {
+  const startTime = Date.now()
+  if (!pathExist(entry)) {
+    console.log("> The path provided as entry doesn't exist.")
+    return
+  }
+  if (isDirectory(entry) && !existIndexFile(entry)) {
+    //check if the entry is a directory and it has an index file inside.
     console.log(
       '> Index file not found inside the given directory. Please inform a valid entry file.'
     )
     return
+  } else if (isDirectory(entry)) {
+    //if it's a directory and exists an index file inside of it, change the entry file.
+    entry = path.join(entry, 'index.js')
   }
-  if (!isDirectory(entry)) {
-    outputPath = isDirectory(output) ? path.join(output, 'bundle.js') : output
-    inputFile = entry
-  } else {
-    inputFile = path.join(entry, 'index.js')
-    outputPath = isDirectory(output) ? path.join(output, 'bundle.js') : output
+  if (pathExist(output) && isDirectory(output)) {
+    //check if output is a directory, then set the output to 'directory/bundle.js'
+    output = path.join(output, 'bundle.js')
+  } else if (!pathExist(output)) {
+    output = path.join(output, 'bundle.js')
   }
-  bundleFile(inputFile, outputPath, options.noMinify).then(
-    ({ dependecies }) => {
-      console.log(`> Successfully bundled ${inputFile} to ${outputPath}`)
-      filesToWatch.push(inputFile)
-      dependecies.map(module => {
-        module.forEach(file => {
-          filesToWatch.push(path.join(path.dirname(outputPath), file))
+  const bundle = bundleFile(entry, options.noMinify)
+  writeFile(bundle.code, output)
+    .then(() => {
+      console.log(
+        `> Successfully bundled ${entry} to ${output}. ${Date.now() -
+          startTime} ms.`
+      )
+      if (options.watch && !watching) {
+        let filesToWatch = [path.resolve(entry)]
+        bundle.dependecies.map(module => {
+          module.forEach(file => {
+            filesToWatch.push(
+              path.resolve(
+                path.join(
+                  path.dirname(entry),
+                  hasExtension(file) ? file : file + '.js'
+                )
+              )
+            )
+          })
         })
-      })
-      filesToWatch = [...new Set([...filesToWatch])]
-      if (options.watch && !watching) startWatch(filesToWatch)
-    }
-  )
+        filesToWatch = [...new Set([...filesToWatch])]
+        startWatch(filesToWatch)
+      }
+    })
+    .catch(err => console.log(err))
 }
+
 bundle(options.entry, options.output)
+
+// bundle(options.entry, options.output)

@@ -1,7 +1,10 @@
 const { bundleFile } = require('../lib/index')
+const path = require('path')
+const fse = require('fs-extra')
 
 test('should run bundle correctly', async () => {
-  await bundleFile('./test/entries/index.js', './test/out/bundle.js')
+  const bundle = bundleFile(path.resolve('./test/entries/index.js'))
+  fse.outputFileSync('./test/out/bundle.js', bundle.code)
   let outputData = ''
   storeLog = inputs => (outputData += inputs)
   console['log'] = jest.fn(storeLog)
